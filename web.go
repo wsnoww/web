@@ -103,8 +103,12 @@ func pagehandler(w http.ResponseWriter, r *http.Request) {
 	t, _ = t.ParseFiles("index.html")
 	t.Execute(w, posts)
 }
+func avatarhandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "avatar.jpg")
+}
 
 func main() {
+	http.HandleFunc("/avatar.jpg", avatarhandler)
 	http.HandleFunc("/", pagehandler)
 	http.ListenAndServe(":8080", nil)
 }
