@@ -1,0 +1,90 @@
+Plasma LED Bomber Jacket
+November 16, 2016
+microcontrollers, hardware, software
+
+Everyone else on the project--Victoria, Laura, and Katrina--have different 
+names for the thing we made, but usually include the words LED and jacket. 
+It's 2016, LED is a word. 
+
+Anyway, Laura and Katrina are fashion designers and artists who do work 
+for/with Whitney Middleton, who is the genius Chance the Rapper's style. 
+As Whitney tells it, she and Chance were brainstorming ideas for different 
+stage outfits for his upcoming tour and he just asked, "How about a light up 
+bomber?"
+
+Whitney asked Laura and Katrina, and they found a lot of 
+[purpose-made hardware](https://www.adafruit.com/category/65) sold by the folks 
+over at Adafruit. Laura contacted her engineering friend Victoria who 
+contacted me, and I assured them it could be easily done. I sent them a bill 
+of materials and drove up on Tuesday morning with my soldering iron and DMM. 
+After over 500 individual stitches and solder joints, we finished in about 
+72 hours. 
+
+![group](/img/group.jpg)
+*All of us working at the same time*
+
+Here are the broad strokes:
+
+1. Adafruit makes a [FLORA](https://www.adafruit.com/product/659) board that 
+includes an [Atmega32u4](http://www.atmel.com/devices/atmega32u4.aspx)
+microcontroller and is compatible with the 
+[Arduino IDE](https://www.arduino.cc/en/Main/Software) right out of the box.
+2. Adafruit also makes [Neopixels](https://www.adafruit.com/products/1559) 
+which are small but powerful RGB LEDs that can be controlled by a simple 
+communication protocol described in 
+[this](https://cdn-shop.adafruit.com/datasheets/WS2812.pdf) datasheet and 
+implemented in [this](https://github.com/adafruit/Adafruit_NeoPixel) library 
+on Github. The real beauty is that the Neopixels are chainable along the 
+1-wire data bus, the microcontroller's memory capacity being the only 
+limiting factor. We bought 160 of them, and ended up using 122.
+
+![sketch1](/img/sketch1.jpg)
+![sketch2](/img/sketch2.jpg)
+*The layout of the jacket*
+
+3. Power requirements. Each Neopixel is bright, and draws around 65mA at full 
+power, so a 
+fully lit up jacket would be drawing almost 8 amps. I got an RC car lithium 
+polymer battery from amazon that was rated for high current draw. It was also 
+a 7.4 
+volt battery, meaning it was two stacked lithium polymer batteries in series. 
+
+![vrbox](/img/vrbox.jpg)
+*The voltage regulator box supplies 5 V up to 8 A*
+
+4. The wiring took some thought. We were using 30 gauge silicon insulated 
+stranded wire. This was fine for the data bus but each Neopixel needed to be 
+connected to 5V and ground. Rough math was that we could only power about 12 
+Neopixels with the 30 gauge wire. 18 or 20 gauge lamp cord would have been 
+beefy enough for the whole jacket, but using that thick a wire to each and 
+Neopixel would not have been workable. It was a very tight fitting jacket to 
+begin with, and he is a very dynamic performer. Anyway, the solution was to 
+solder the power bus in groups of ~12 Neopixels with the 30 gauge wire, then 
+have a short run of lamp cord soldered to each small "grouping" of Neopixels. 
+The power bus for each group was also arranged in a ring pattern, which gave 
+us a failsafe in case one of the solder joints (or wires) broke. 
+
+![stitch](/img/stitch.jpg)
+*The neopixels stitched onto the jacket and the data bus soldered*
+
+5. Why did we solder all the joints and not use stainless steel thread like 
+the Adafruit people recommend? Well, first, there are 3 wire busses running to 
+and from every Neopixel. It's a rats nest of wires in there and there's really 
+no way to be sure that exposed wire wouldn't short. Perhaps if every bus had 
+its own layer and we minimized cross stitching, but soldering each joint 
+seemed like it would take less time. Also, at 8 amps, short circuits were a 
+safety concern. We didn't want to risk any short circuits. 
+
+![debug](/img/debug.jpg)
+*Turning the thing on after all that soldering, there were only 2 bugs*
+
+6. Programming the thing. The github library takes care of the PIO for the 
+data bus, and also includes a data structure for storing the state of the 
+Neopixels. Once you have your state--RGB color data for each Neopixel along 
+the chain--you refresh the LEDs and viola. There are a whole lot of lighting 
+tricks I programmed. View the code on Victoria's Github 
+[here](https://github.com/victoriaiii/JacketCode/blob/master/JacketProgram1/JacketProgram1.ino). 
+
+![chance](/img/chance.jpg)
+*Smoke break*
+

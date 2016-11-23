@@ -11,16 +11,35 @@ import (
 	"os"
 	"path/filepath"
 	"fmt"
+	"sort"
 	"github.com/russross/blackfriday"
 )
+
+// todo: serve all static content
+//	fix date parsing
 
 type Post struct {
 	Filename string
 	Title string
-	Date time.Time
+	PublishDate time.Time
 	Tags []string
 	Body []byte
 	Html template.HTML
+}
+
+// interface to Sort()
+type PostSort []*Post
+
+func (posts PostSort) Len() int {
+	return len(posts)
+}
+
+func (posts PostSort) Swap(i, j int) {
+	posts[i], posts[j] = posts[j], posts[i]
+}
+
+func (posts PostSort) Less(i, j int) bool {
+	return posts[i].PublishDate.Before(posts[j].PublishDate)
 }
 
 func parsedate(d string) (time.Time, error) {
@@ -62,10 +81,11 @@ func loadpost(path string) (*Post, error) {
 	if err != nil {
 		return nil, err
 	}
-	p.Date, _ = parsedate(date)
-	//if err != nil {
-		//return nil, err
-	//}
+	p.PublishDate, _ = parsedate(date)
+	//fmt.Print(p.PublishDate)
+	if err != nil {
+		return nil, err
+	}
 	tags, err := reader.ReadString('\n')
 	if err != nil {
 		return nil, err
@@ -83,17 +103,17 @@ func getposts() ([]*Post, error) {
 	var posts []*Post
 	filenames, err := filepath.Glob("posts/*.txt")
 	if err != nil {
-		fmt.Println("error reading filenames")
 		return nil, err
 	}
 	for _, fn := range filenames {
 		p, err := loadpost(fn)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Print(err)
 			return nil, err
 		}
 		posts = append(posts, p)
 	}
+	sort.Sort(PostSort(posts))
 	return posts, nil
 }
 
@@ -103,13 +123,10 @@ func pagehandler(w http.ResponseWriter, r *http.Request) {
 	t, _ = t.ParseFiles("index.html")
 	t.Execute(w, posts)
 }
-func avatarhandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "avatar.jpg")
-}
 
 func main() {
-	http.HandleFunc("/avatar.jpg", avatarhandler)
 	http.HandleFunc("/", pagehandler)
+	http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("./img/"))))
 	http.ListenAndServe(":8080", nil)
 }
 
