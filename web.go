@@ -123,10 +123,14 @@ func pagehandler(w http.ResponseWriter, r *http.Request) {
 	t, _ = t.ParseFiles("index.html")
 	t.Execute(w, posts)
 }
+func resumehandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "resume.pdf")
+}
 
 func main() {
 	http.HandleFunc("/", pagehandler)
+	http.HandleFunc("/resume.pdf", resumehandler)
 	http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("./img/"))))
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":80", nil)
 }
 
